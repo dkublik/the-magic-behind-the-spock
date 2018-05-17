@@ -20,5 +20,5 @@ task getDeps(type: Copy) {
 }
 
 wrapper {
-    gradleVersion '4.6'
+    gradleVersion '4.7'
 }
