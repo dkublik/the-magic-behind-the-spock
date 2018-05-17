@@ -1,0 +1,24 @@
+apply plugin: 'java'
+apply plugin: 'groovy'
+
+version = '1.0'
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.spockframework:spock-core:1.1-groovy-2.4'
+    compile 'cglib:cglib-nodep:3.2.6'
+    compile 'org.neo4j.driver:neo4j-java-driver:1.4.4'
+}
+
+task getDeps(type: Copy) {
+    from sourceSets.main.compileClasspath
+    into 'runtime/'
+}
+
+wrapper {
+    gradleVersion '4.6'
+}
