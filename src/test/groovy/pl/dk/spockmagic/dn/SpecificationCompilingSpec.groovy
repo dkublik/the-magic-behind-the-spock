@@ -6,12 +6,11 @@ class SpecificationCompilingSpec extends Specification {
 
     def "should compile MagnifyingProxySpec.groovy"() {
         given:
-            def file = new File('src/test/groovy/pl/dk/spockmagic/dn/MagnifyingProxySpec.groovy')
+            def file = new File('src/test/groovy/pl/dk/spockmagic/MagnifyingProxySpec.groovy')
 
         when:
             GroovyClassLoader invoker = new GroovyClassLoader()
             Class clazz = invoker.parseClass(file)
-
 
         then:
             clazz != null
