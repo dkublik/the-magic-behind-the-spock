@@ -8,11 +8,11 @@ class SpecificationRuntimeModifyingSpec extends Specification {
 
     def "should modify methods"() {
         given:
-            MagnifyingProxyRawSpec.class.metaClass.Stub = {
+            MagnifyingProxyRawSpec.metaClass.Stub = {
                 println('My custom Stub implementation')
                 new ValueProvider() { int provideValue() { 21 } }
             }
-            MagnifyingProxyRawSpec.class.metaClass.Mock = {
+            MagnifyingProxyRawSpec.metaClass.Mock = {
                 println('My custom Mock implementation')
                 new UsageCounter() { void increase() {} }
             }
