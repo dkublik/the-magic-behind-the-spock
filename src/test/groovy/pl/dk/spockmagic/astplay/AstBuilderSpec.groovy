@@ -21,7 +21,6 @@ class AstBuilderSpec extends Specification {
             noExceptionThrown()
     }
 
-
     def "should build class from code0"() {
         when:
             List<ASTNode> nodes = new AstBuilder().buildFromString(SEMANTIC_ANALYSIS, true, """
@@ -42,8 +41,6 @@ class AstBuilderSpec extends Specification {
             noExceptionThrown()
 
     }
-
-
 
     def "should build class from code2"() {
         when:
@@ -66,28 +63,27 @@ class AstBuilderSpec extends Specification {
             noExceptionThrown()
     }
 
-
     def "should build class from code"() {
         when:
             def code = new AstBuilder().buildFromString(CONVERSION, true, """
 import spock.lang.Specification
 import spock.lang.Subject
-class pl.dk.spockmagic.dn.MagnifyingProxySpec extends Specification {
+class MagnifyingProxySpec extends Specification {
 
-    pl.dk.spockmagic.ValueProvider valueProvider = Stub()
+    ValueProvider valueProvider = Stub()
 
     @Subject
-    pl.dk.spockmagic.MagnifyingProxy magnifyingProxy = new pl.dk.spockmagic.MagnifyingProxy(valueProvider)
+    MagnifyingProxy magnifyingProxy = new pl.dk.spockmagic.MagnifyingProxy(valueProvider)
 
     def "should magnify value"() {
         given:
-        valueProvider.provideValue() >> 21
+            valueProvider.provideValue() >> 21
 
         when:
-        int result = magnifyingProxy.provideMagnifiedValue()
+            int result = magnifyingProxy.provideMagnifiedValue()
 
         then:
-        result == 210
+            result == 210
     }
 }
         """)
@@ -96,7 +92,6 @@ class pl.dk.spockmagic.dn.MagnifyingProxySpec extends Specification {
          //   graphPersistingVisitor.visitClass(specNode)
             GraphPersistingVisitor2 graphPersistingVisitor = new GraphPersistingVisitor2(null)
             specNode.visitContents(graphPersistingVisitor)
-
 
         then:
             code != null
