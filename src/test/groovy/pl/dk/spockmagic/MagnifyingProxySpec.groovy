@@ -1,8 +1,5 @@
-package pl.dk.spockmagic.dn
+package pl.dk.spockmagic
 
-import pl.dk.spockmagic.MagnifyingProxy
-import pl.dk.spockmagic.UsageCounter
-import pl.dk.spockmagic.ValueProvider
 import spock.lang.Specification
 import spock.lang.Subject
 
