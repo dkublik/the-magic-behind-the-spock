@@ -1,12 +1,14 @@
 package pl.dk.spockmagic.astplay
 
+import groovy.inspect.TextTreeNodeMaker
+import groovy.inspect.swingui.ScriptToTreeNodeAdapter
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.builder.AstBuilder
 import pl.dk.spockmagic.neo.GraphPersistingVisitor2
+import pl.dk.spockmagic.neo.GraphPersistingVisitor3
 import spock.lang.Specification
 
-import static org.codehaus.groovy.control.CompilePhase.CONVERSION
 import static org.codehaus.groovy.control.CompilePhase.SEMANTIC_ANALYSIS
 
 class AstBuilderSpec extends Specification {
@@ -65,15 +67,20 @@ class AstBuilderSpec extends Specification {
 
     def "should build class from code"() {
         when:
-            def code = new AstBuilder().buildFromString(CONVERSION, true, """
+            def code = new AstBuilder().buildFromString(SEMANTIC_ANALYSIS, true, """
+package pl.dk.spockmagic
+
+import pl.dk.spockmagic.spockoff.DisableSpockMagic
 import spock.lang.Specification
 import spock.lang.Subject
+
+//@DisableSpockMagic
 class MagnifyingProxySpec extends Specification {
 
     ValueProvider valueProvider = Stub()
 
     @Subject
-    MagnifyingProxy magnifyingProxy = new pl.dk.spockmagic.MagnifyingProxy(valueProvider)
+    MagnifyingProxy magnifyingProxy = new MagnifyingProxy(valueProvider)
 
     def "should magnify value"() {
         given:
@@ -88,10 +95,8 @@ class MagnifyingProxySpec extends Specification {
 }
         """)
             ClassNode specNode = code[1]
-           // GraphPersistingVisitor graphPersistingVisitor = new GraphPersistingVisitor()
-         //   graphPersistingVisitor.visitClass(specNode)
-            GraphPersistingVisitor2 graphPersistingVisitor = new GraphPersistingVisitor2(null)
-            specNode.visitContents(graphPersistingVisitor)
+            GraphPersistingVisitor3 graphPersistingVisitor = new GraphPersistingVisitor3(null)
+            graphPersistingVisitor.visitClass(specNode)
 
         then:
             code != null

@@ -1,80 +1,28 @@
 package pl.dk.spockmagic.neo
 
-import org.codehaus.groovy.ast.ASTNode
-import org.codehaus.groovy.ast.ClassCodeVisitorSupport
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.ast.CodeVisitorSupport
-import org.codehaus.groovy.ast.DynamicVariable
-import org.codehaus.groovy.ast.FieldNode
-import org.codehaus.groovy.ast.MethodNode
-import org.codehaus.groovy.ast.Parameter
-import org.codehaus.groovy.ast.PropertyNode
-import org.codehaus.groovy.ast.expr.ArgumentListExpression
-import org.codehaus.groovy.ast.expr.ArrayExpression
-import org.codehaus.groovy.ast.expr.AttributeExpression
-import org.codehaus.groovy.ast.expr.BinaryExpression
-import org.codehaus.groovy.ast.expr.BitwiseNegationExpression
-import org.codehaus.groovy.ast.expr.BooleanExpression
-import org.codehaus.groovy.ast.expr.CastExpression
-import org.codehaus.groovy.ast.expr.ClassExpression
-import org.codehaus.groovy.ast.expr.ClosureExpression
-import org.codehaus.groovy.ast.expr.ClosureListExpression
-import org.codehaus.groovy.ast.expr.ConstantExpression
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression
-import org.codehaus.groovy.ast.expr.DeclarationExpression
-import org.codehaus.groovy.ast.expr.ElvisOperatorExpression
-import org.codehaus.groovy.ast.expr.Expression
-import org.codehaus.groovy.ast.expr.FieldExpression
-import org.codehaus.groovy.ast.expr.GStringExpression
-import org.codehaus.groovy.ast.expr.ListExpression
-import org.codehaus.groovy.ast.expr.MapEntryExpression
-import org.codehaus.groovy.ast.expr.MapExpression
-import org.codehaus.groovy.ast.expr.MethodCallExpression
-import org.codehaus.groovy.ast.expr.MethodPointerExpression
-import org.codehaus.groovy.ast.expr.NamedArgumentListExpression
-import org.codehaus.groovy.ast.expr.NotExpression
-import org.codehaus.groovy.ast.expr.PostfixExpression
-import org.codehaus.groovy.ast.expr.PrefixExpression
-import org.codehaus.groovy.ast.expr.PropertyExpression
-import org.codehaus.groovy.ast.expr.RangeExpression
-import org.codehaus.groovy.ast.expr.SpreadExpression
-import org.codehaus.groovy.ast.expr.SpreadMapExpression
-import org.codehaus.groovy.ast.expr.StaticMethodCallExpression
-import org.codehaus.groovy.ast.expr.TernaryExpression
-import org.codehaus.groovy.ast.expr.TupleExpression
-import org.codehaus.groovy.ast.expr.UnaryMinusExpression
-import org.codehaus.groovy.ast.expr.UnaryPlusExpression
-import org.codehaus.groovy.ast.expr.VariableExpression
-import org.codehaus.groovy.ast.stmt.AssertStatement
-import org.codehaus.groovy.ast.stmt.BlockStatement
-import org.codehaus.groovy.ast.stmt.BreakStatement
-import org.codehaus.groovy.ast.stmt.CaseStatement
-import org.codehaus.groovy.ast.stmt.CatchStatement
-import org.codehaus.groovy.ast.stmt.ContinueStatement
-import org.codehaus.groovy.ast.stmt.DoWhileStatement
-import org.codehaus.groovy.ast.stmt.EmptyStatement
-import org.codehaus.groovy.ast.stmt.ExpressionStatement
-import org.codehaus.groovy.ast.stmt.ForStatement
-import org.codehaus.groovy.ast.stmt.IfStatement
-import org.codehaus.groovy.ast.stmt.ReturnStatement
-import org.codehaus.groovy.ast.stmt.Statement
-import org.codehaus.groovy.ast.stmt.SwitchStatement
-import org.codehaus.groovy.ast.stmt.SynchronizedStatement
-import org.codehaus.groovy.ast.stmt.ThrowStatement
-import org.codehaus.groovy.ast.stmt.TryCatchStatement
-import org.codehaus.groovy.ast.stmt.WhileStatement
+import org.codehaus.groovy.ast.*
+import org.codehaus.groovy.ast.expr.*
+import org.codehaus.groovy.ast.stmt.*
 import org.codehaus.groovy.classgen.BytecodeExpression
 import org.codehaus.groovy.control.SourceUnit
 
-class GraphPersistingVisitor2 extends ClassCodeVisitorSupport {
+class GraphPersistingVisitor3 extends ClassCodeVisitorSupport {
 
     def parentNode
     private final adapter
     private int indents = 0
+    private NodeCreator nodeCreator = new NodeCreator( "bolt://localhost:7687", "neo4j", "pass" )
 
-    private GraphPersistingVisitor2(adapter) {
+    private GraphPersistingVisitor3(adapter) {
    //     if (!adapter) throw new IllegalArgumentException('Null: adapter')
         this.adapter = adapter
+        def properties = Collections.synchronizedMap([:])
+        ASTNode.metaClass.setNodeId = { String value ->
+            properties[System.identityHashCode(delegate) + "nodeId"] = value
+        }
+        ASTNode.metaClass.getNodeId = {->
+            properties[System.identityHashCode(delegate) + "nodeId"]
+        }
     }
 
     private void addNode(node, Class expectedSubclass, Closure superMethod) {
@@ -82,7 +30,7 @@ class GraphPersistingVisitor2 extends ClassCodeVisitorSupport {
         if (expectedSubclass.getName() == node.getClass().getName()) {
             if (parentNode == null) {
                 parentNode = node
-                printNode(node)
+                onNode(null, node)
                 superMethod.call(node)
             } else {
                 // visitor works off void methods... so we have to
@@ -93,7 +41,7 @@ class GraphPersistingVisitor2 extends ClassCodeVisitorSupport {
 
            //     temp.add(currentNode)
           //      currentNode.parent = temp
-                printNode(node)
+                onNode(currentNode, node)
                 superMethod.call(node)
                 indents--
                 parentNode = currentNode
@@ -101,6 +49,11 @@ class GraphPersistingVisitor2 extends ClassCodeVisitorSupport {
         } else {
             superMethod.call(node)
         }
+    }
+
+    private void onNode(ASTNode parent, ASTNode node) {
+        nodeCreator.addNode(parent, node)
+        printNode(node)
     }
 
     private void printNode(ASTNode node) {
