@@ -92,7 +92,7 @@ class MagnifyingProxySpec extends Specification {
 }
         """)
             ClassNode specNode = code[1]
-            GraphPersistingVisitor graphPersistingVisitor = new GraphPersistingVisitor(null)
+            GraphPersistingVisitor graphPersistingVisitor = new GraphPersistingVisitor()
             graphPersistingVisitor.visitClass(specNode)
 
         then:

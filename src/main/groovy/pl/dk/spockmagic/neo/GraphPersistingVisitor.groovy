@@ -8,14 +8,11 @@ import org.codehaus.groovy.control.SourceUnit
 
 class GraphPersistingVisitor extends ClassCodeVisitorSupport {
 
-    def parentNode
-    private final adapter
+    ASTNode parentNode
     private int indents = 0
-    private NodeCreator nodeCreator = new NodeCreator( "bolt://localhost:7687", "neo4j", "pass" )
+    private NodeCreator nodeCreator = new NodeCreator( 'bolt://localhost:7687', 'neo4j', 'pass' )
 
-    private GraphPersistingVisitor(adapter) {
-   //     if (!adapter) throw new IllegalArgumentException('Null: adapter')
-        this.adapter = adapter
+    private GraphPersistingVisitor() {
         def properties = Collections.synchronizedMap([:])
         ASTNode.metaClass.setNodeId = { String value ->
             properties[System.identityHashCode(delegate) + "nodeId"] = value
@@ -25,25 +22,19 @@ class GraphPersistingVisitor extends ClassCodeVisitorSupport {
         }
     }
 
-    private void addNode(node, Class expectedSubclass, Closure superMethod) {
-
+    private void addNode(ASTNode node, Class expectedSubclass, Closure superMethod) {
         if (expectedSubclass.getName() == node.getClass().getName()) {
             if (parentNode == null) {
                 parentNode = node
                 onNode(null, node)
                 superMethod.call(node)
             } else {
-                // visitor works off void methods... so we have to
-                // perform a swap to get accumulation like behavior.
                 def currentNode = parentNode
-                parentNode = node //adapter.make(node)
-                indents++
-
-           //     temp.add(currentNode)
-          //      currentNode.parent = temp
+                parentNode = node
+                indents ++
                 onNode(currentNode, node)
                 superMethod.call(node)
-                indents--
+                indents --
                 parentNode = currentNode
             }
         } else {
@@ -60,25 +51,42 @@ class GraphPersistingVisitor extends ClassCodeVisitorSupport {
         for (int i = 0; i < indents; i++) {
             print('    ')
         }
-        println(getText(node))
-    }
-
-    private String getText(ASTNode node) {
-        if (node.getText().startsWith('<not implemented yet for class:')) {
-            if (node instanceof FieldNode) {
-                FieldNode fieldNode = (FieldNode) node
-                return node.getClass().getSimpleName() + ", " + fieldNode.type.name + ": " + fieldNode.name
-            }
-        }
-        return node.getClass().getSimpleName() + ", " + node.getText()
+        println(node.class.simpleName + ', ' + NodeTextRetriever.getText(node))
     }
 
     void visitClass(ClassNode node) {
-        visitAnnotations(node)
-        visitPackage(node.getPackage())
-        visitImports(node.getModule())
-        addNode(node, ClassNode, { node.visitContents(this) })
-        visitObjectInitializerStatements(node)
+        addNode(node, ClassNode, {
+            visitAnnotations(node)
+            visitPackage(node.getPackage())
+            visitImports(node.getModule())
+            node.visitContents(this)
+            visitObjectInitializerStatements(node)
+        })
+    }
+
+    void visitAnnotations(AnnotatedNode node) {
+        List<AnnotationNode> annotations = node.getAnnotations()
+        if (annotations.isEmpty()) return
+        for (AnnotationNode an : annotations) {
+            addNode(an, AnnotationNode, {
+                // skip built-in properties
+                if (an.isBuiltIn()) return
+                for (Map.Entry<String, Expression> member : an.getMembers().entrySet()) {
+                    addNode(node, Expression, {
+                        member.getValue().visit(this)
+                    })
+                }
+            })
+        }
+    }
+
+    void visitPackage(PackageNode node) {
+        if (node != null) {
+            addNode(node, PackageNode, {
+                visitAnnotations(node)
+                node.visit(this)
+            })
+        }
     }
 
     void visitField(FieldNode node) {
@@ -113,10 +121,6 @@ class GraphPersistingVisitor extends ClassCodeVisitorSupport {
                 addNode(statement, Statement, { statement.visit(this) })
             }
         })
-
-        for (Statement statement : block.getStatements()) {
-            statement.visit(this)
-        }
     }
 
     void visitForLoop(ForStatement node) {
