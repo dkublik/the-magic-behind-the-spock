@@ -93,7 +93,11 @@ class GraphPersistingVisitor extends ClassCodeVisitorSupport {
         addNode(node, FieldNode, {
             visitAnnotations(node)
             Expression init = node.getInitialExpression()
-            if (init != null) init.visit(this)
+            if (init != null) {
+                addNode(init, Expression, {
+                    init.visit(this)
+                })
+            }
         })
     }
 

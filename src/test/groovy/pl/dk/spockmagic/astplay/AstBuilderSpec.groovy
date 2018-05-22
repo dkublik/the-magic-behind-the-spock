@@ -75,9 +75,10 @@ import spock.lang.Subject
 class MagnifyingProxySpec extends Specification {
 
     ValueProvider valueProvider = Stub()
+    UsageCounter usageCounter = Mock()
 
     @Subject
-    MagnifyingProxy magnifyingProxy = new MagnifyingProxy(valueProvider)
+    MagnifyingProxy magnifyingProxy = new MagnifyingProxy(valueProvider, usageCounter)
 
     def "should magnify value"() {
         given:
@@ -88,6 +89,7 @@ class MagnifyingProxySpec extends Specification {
 
         then:
             result == 210
+            1 * usageCounter.increase()
     }
 }
         """)

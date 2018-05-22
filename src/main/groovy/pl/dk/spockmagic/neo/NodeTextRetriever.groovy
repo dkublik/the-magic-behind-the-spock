@@ -14,7 +14,7 @@ class NodeTextRetriever {
             }
             if (node instanceof AnnotationNode) {
                 AnnotationNode annotationNode = (AnnotationNode) node
-                return annotationNode.members.keySet()
+                return annotationNode.classNode.name + ': ' + annotationNode.members.keySet().toString()
             }
         }
         return node.text
