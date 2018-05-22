@@ -1,12 +1,9 @@
 package pl.dk.spockmagic.astplay
 
-import groovy.inspect.TextTreeNodeMaker
-import groovy.inspect.swingui.ScriptToTreeNodeAdapter
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.builder.AstBuilder
-import pl.dk.spockmagic.neo.GraphPersistingVisitor2
-import pl.dk.spockmagic.neo.GraphPersistingVisitor3
+import pl.dk.spockmagic.neo.GraphPersistingVisitor
 import spock.lang.Specification
 
 import static org.codehaus.groovy.control.CompilePhase.SEMANTIC_ANALYSIS
@@ -95,7 +92,7 @@ class MagnifyingProxySpec extends Specification {
 }
         """)
             ClassNode specNode = code[1]
-            GraphPersistingVisitor3 graphPersistingVisitor = new GraphPersistingVisitor3(null)
+            GraphPersistingVisitor graphPersistingVisitor = new GraphPersistingVisitor(null)
             graphPersistingVisitor.visitClass(specNode)
 
         then:

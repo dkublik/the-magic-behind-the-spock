@@ -6,14 +6,14 @@ import org.codehaus.groovy.ast.stmt.*
 import org.codehaus.groovy.classgen.BytecodeExpression
 import org.codehaus.groovy.control.SourceUnit
 
-class GraphPersistingVisitor3 extends ClassCodeVisitorSupport {
+class GraphPersistingVisitor extends ClassCodeVisitorSupport {
 
     def parentNode
     private final adapter
     private int indents = 0
     private NodeCreator nodeCreator = new NodeCreator( "bolt://localhost:7687", "neo4j", "pass" )
 
-    private GraphPersistingVisitor3(adapter) {
+    private GraphPersistingVisitor(adapter) {
    //     if (!adapter) throw new IllegalArgumentException('Null: adapter')
         this.adapter = adapter
         def properties = Collections.synchronizedMap([:])

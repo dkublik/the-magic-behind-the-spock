@@ -48,10 +48,10 @@ class NodeCreator implements AutoCloseable {
     private String getText(ASTNode node) {
         if (node.getText().startsWith("<not implemented yet for class:")) {
             if (node instanceof FieldNode) {
-                FieldNode fieldNode = (FieldNode) node;
-                return fieldNode.getType().getName() + ": " + fieldNode.getName();
+                FieldNode fieldNode = (FieldNode) node
+                return fieldNode.getType().getName() + ": " + fieldNode.getName()
             }
         }
-        return node.getText();
+        return node.getText()
     }
 }
