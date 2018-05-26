@@ -62,6 +62,22 @@ class AstBuilderSpec extends Specification {
             noExceptionThrown()
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     def "should build class from code"() {
         when:
             def code = new AstBuilder().buildFromString(SEMANTIC_ANALYSIS, true, """
@@ -71,7 +87,7 @@ import pl.dk.spockmagic.spockoff.DisableSpockMagic
 import spock.lang.Specification
 import spock.lang.Subject
 
-//@DisableSpockMagic
+@DisableSpockMagic
 class MagnifyingProxySpec extends Specification {
 
     ValueProvider valueProvider = Stub()
