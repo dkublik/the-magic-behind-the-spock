@@ -80,14 +80,14 @@ class AstBuilderSpec extends Specification {
 
     def "should build class from code"() {
         when:
-            def code = new AstBuilder().buildFromString(SEMANTIC_ANALYSIS, true, """
+            def nodes = new AstBuilder().buildFromString(SEMANTIC_ANALYSIS, true, """
 package pl.dk.spockmagic
 
 import pl.dk.spockmagic.spockoff.DisableSpockMagic
 import spock.lang.Specification
 import spock.lang.Subject
 
-@DisableSpockMagic
+//@DisableSpockMagic
 class MagnifyingProxySpec extends Specification {
 
     ValueProvider valueProvider = Stub()
@@ -109,11 +109,11 @@ class MagnifyingProxySpec extends Specification {
     }
 }
         """)
-            ClassNode specNode = code[1]
+            ClassNode specNode = nodes[1]
             GraphPersistingVisitor graphPersistingVisitor = new GraphPersistingVisitor()
             graphPersistingVisitor.visitClass(specNode)
 
         then:
-            code != null
+            nodes != null
     }
 }
