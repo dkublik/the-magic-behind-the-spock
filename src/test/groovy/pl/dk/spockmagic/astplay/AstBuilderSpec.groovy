@@ -87,7 +87,7 @@ import pl.dk.spockmagic.spockoff.DisableSpockMagic
 import spock.lang.Specification
 import spock.lang.Subject
 
-//@DisableSpockMagic
+@DisableSpockMagic
 class MagnifyingProxySpec extends Specification {
 
     ValueProvider valueProvider = Stub()
