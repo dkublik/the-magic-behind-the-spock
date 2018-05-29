@@ -10,17 +10,7 @@ import static org.codehaus.groovy.control.CompilePhase.SEMANTIC_ANALYSIS
 
 class AstBuilderSpec extends Specification {
 
-    def "should build block statement from code"() {
-        when:
-            def node = new AstBuilder().buildFromCode {
-                String city = 'København'
-            }
-
-        then:
-            noExceptionThrown()
-    }
-
-    def "should build class from code0"() {
+    def "should build class from code - arithmetical"() {
         when:
             List<ASTNode> nodes = new AstBuilder().buildFromString(SEMANTIC_ANALYSIS, true, """
                     2 + 3 * 4
@@ -30,7 +20,7 @@ class AstBuilderSpec extends Specification {
             noExceptionThrown()
     }
 
-    def "should build class from code1"() {
+    def "should build class from code - constant expression"() {
         when:
             List<ASTNode> nodes = new AstBuilder().buildFromString(SEMANTIC_ANALYSIS, true, """
                 'København'
@@ -41,7 +31,7 @@ class AstBuilderSpec extends Specification {
 
     }
 
-    def "should build class from code2"() {
+    def "should build class from code - declaration"() {
         when:
             List<ASTNode> nodes = new AstBuilder().buildFromString(SEMANTIC_ANALYSIS, true, """
                     String city = 'København'
@@ -51,7 +41,7 @@ class AstBuilderSpec extends Specification {
             noExceptionThrown()
     }
 
-    def "should build class from code3"() {
+    def "should build class from code - for loop"() {
         when:
             List<ASTNode> nodes = new AstBuilder().buildFromString(SEMANTIC_ANALYSIS, true, """
                     for (def a: 'København')
@@ -81,34 +71,34 @@ class AstBuilderSpec extends Specification {
     def "should build class from code"() {
         when:
             def nodes = new AstBuilder().buildFromString(SEMANTIC_ANALYSIS, true, """
-package pl.dk.spockmagic
-
-import pl.dk.spockmagic.spockoff.DisableSpockMagic
-import spock.lang.Specification
-import spock.lang.Subject
-
-@DisableSpockMagic
-class MagnifyingProxySpec extends Specification {
-
-    ValueProvider valueProvider = Stub()
-    UsageCounter usageCounter = Mock()
-
-    @Subject
-    MagnifyingProxy magnifyingProxy = new MagnifyingProxy(valueProvider, usageCounter)
-
-    def "should magnify value"() {
-        given:
-            valueProvider.provideValue() >> 21
-
-        when:
-            int result = magnifyingProxy.provideMagnifiedValue()
-
-        then:
-            result == 210
-            1 * usageCounter.increase()
-    }
-}
-        """)
+                package pl.dk.spockmagic
+                
+                import pl.dk.spockmagic.spockoff.DisableSpockMagic
+                import spock.lang.Specification
+                import spock.lang.Subject
+                
+                @DisableSpockMagic
+                class MagnifyingProxySpec extends Specification {
+                
+                    ValueProvider valueProvider = Stub()
+                    UsageCounter usageCounter = Mock()
+                
+                    @Subject
+                    MagnifyingProxy magnifyingProxy = new MagnifyingProxy(valueProvider, usageCounter)
+                
+                    def "should magnify value"() {
+                        given:
+                            valueProvider.provideValue() >> 21
+                
+                        when:
+                            int result = magnifyingProxy.provideMagnifiedValue()
+                
+                        then:
+                            result == 210
+                            1 * usageCounter.increase()
+                    }
+                }
+            """)
             ClassNode specNode = nodes[1]
             GraphPersistingVisitor graphPersistingVisitor = new GraphPersistingVisitor()
             graphPersistingVisitor.visitClass(specNode)
@@ -116,4 +106,5 @@ class MagnifyingProxySpec extends Specification {
         then:
             nodes != null
     }
+
 }
